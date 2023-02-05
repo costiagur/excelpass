@@ -3,8 +3,9 @@ import zipfile
 import tempfile
 import os
 import json
+from io import BytesIO
 
-def removepass(xlsxfile):
+def returnpass(xlsxfile,jsonfile):
 
     tempf = tempfile.NamedTemporaryFile(mode="w+b",delete=False)
 
@@ -18,14 +19,15 @@ def removepass(xlsxfile):
 
     zippedxls.extractall(tempdir.name)
 
-    seclog = dict()
+    seclog = json.load(BytesIO(jsonfile))
 
     for eachfilename in os.listdir(tempdir.name + '/xl/worksheets'):
         if eachfilename.find('xml') > -1:
             with open(tempdir.name + '/xl/worksheets/'+ eachfilename,mode="r+",encoding="utf8") as fp:
                 soup = BeautifulSoup(fp, 'lxml-xml')
-                if soup.find('sheetProtection') != None:
-                    seclog['/xl/worksheets/'+ eachfilename] = str(soup.sheetProtection.extract())
+                if soup.find('sheetProtection') == None and seclog['/xl/worksheets/'+ eachfilename] != None:
+                    newtag = soup.new_tag(seclog['/xl/worksheets/'+ eachfilename][1:-2])
+                    soup.sheetData.insert_after(newtag)
                     fp.seek(0)
                     fp.write(str(soup))
                     fp.truncate()
@@ -36,15 +38,14 @@ def removepass(xlsxfile):
 
     with open(tempdir.name + '/xl/workbook.xml',mode="r+",encoding="utf8") as wb:
         soupwb = BeautifulSoup(wb, 'lxml-xml')
-        if soupwb.find('workbookProtection') != None:
-            seclog['/xl/workbook.xml'] = str(soupwb.workbookProtection.extract())
+        if soupwb.find('workbookProtection') == None and seclog['/xl/workbook.xml'] != None:
+            newtag = soupwb.new_tag(seclog['/xl/workbook.xml'][1:-2])
+            soupwb.bookViews.insert_before(newtag)
             wb.seek(0)
             wb.write(str(soupwb))
             wb.truncate()
         #
     #
-
-    jsonstr = json.dumps(seclog)
 
     tempresf = tempfile.NamedTemporaryFile(mode="w+b",delete=False)
 
@@ -63,9 +64,7 @@ def removepass(xlsxfile):
     resbites = tempresf.read()
 
     tempresf.close()
-    os.unlink(tempresf.name)
-    os.unlink(tempf.name)
     tempdir.cleanup()
 
-    return (resbites,jsonstr.encode())
+    return resbites
 #

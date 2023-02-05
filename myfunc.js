@@ -44,8 +44,13 @@ myfunc.submit = function(){ //request can be insert or update
                 alert(resobj[1])
             }
             else{
-                myfunc.download("result.xlsx",resobj[0])
-                myfunc.download("passes.json",resobj[1])
+                if (ops["removepass"]==true){
+                    myfunc.download("result.xlsx",resobj[0])
+                    myfunc.download("passes.json",resobj[1])     
+                }
+                else if (ops["returnpass"]==true){
+                    myfunc.download("result.xlsx",resobj[0])
+                }
             }
         }
     }

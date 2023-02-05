@@ -2,7 +2,7 @@ import base64
 import json
 import common
 import removepass
-import adpass
+import returnpass
 
 CODESTR = "xlsxpass"
 
@@ -20,13 +20,13 @@ def myfunc(queryobj):
             restuple = removepass.removepass(filesdict["xlsxfile"][1])
         
         elif postdict["action"] == "returnpass":
-            restuple = adpass.adpass(filesdict["xlsxfile"][1], filesdict["jsonfile"][1])
+            res = returnpass.returnpass(filesdict["xlsxfile"][1], filesdict["jsonfile"][1])
         #
         # reply message should be encoded to be sent back to browser ----------------------------------------------
         # encoding to base64 is used to send ansi hebrew data. it is decoded to become string and put into json.
         # json is encoded to be sent to browser.
 
-        if bool(restuple[0]):
+        if postdict["action"] == "removepass" and bool(restuple[0]):
             file64dec = []
             for eachfile in restuple:
                 file64enc = base64.b64encode(eachfile)
@@ -35,6 +35,13 @@ def myfunc(queryobj):
             
             replymsg = json.dumps([file64dec[0],file64dec[1]]).encode('UTF-8')
         #
+        elif postdict["action"] == "returnpass" and bool(res):
+            file64enc = base64.b64encode(res)
+            file64dec = file64enc.decode()
+            
+            replymsg = json.dumps([file64dec]).encode('UTF-8')
+        #
+
         else: #if filesdict is empty
             replymsg = json.dumps(["Error","No file provided"]).encode('UTF-8')
         #
