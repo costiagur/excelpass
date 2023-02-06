@@ -19,6 +19,7 @@ def returnpass(xlsxfile,jsonfile):
 
     zippedxls.extractall(tempdir.name)
 
+    zippedxls.close()
     seclog = json.load(BytesIO(jsonfile))
 
     for eachfilename in os.listdir(tempdir.name + '/xl/worksheets'):
@@ -65,6 +66,7 @@ def returnpass(xlsxfile,jsonfile):
 
     tempresf.close()
     tempdir.cleanup()
+    os.unlink(tempf.name)
 
     return resbites
 #

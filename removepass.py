@@ -18,6 +18,7 @@ def removepass(xlsxfile):
 
     zippedxls.extractall(tempdir.name)
 
+    zippedxls.close()
     seclog = dict()
 
     for eachfilename in os.listdir(tempdir.name + '/xl/worksheets'):
